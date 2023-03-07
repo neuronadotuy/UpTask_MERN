@@ -1,5 +1,7 @@
 import User from '../model/User.js';
 import genId from '../helpers/genid.js';
+import genJson from '../helpers/genJWT.js';
+import genJsonWebToken from '../helpers/genJWT.js';
 
 const register = async (req, res) => {
 
@@ -44,7 +46,8 @@ const auth = async (req, res) => {
 		res.json({
 			_id: user._id,
 			name: user.name,
-			email: user.email
+			email: user.email,
+			token: genJsonWebToken(user._id),
 		})
 	} else {
 		const error = new Error('Wrong user or password');
@@ -52,7 +55,12 @@ const auth = async (req, res) => {
 	};
 };
 
+const confirm = async (req, res) => {
+
+}
+
 export {
 	register,
 	auth,
+	confirm
 };
