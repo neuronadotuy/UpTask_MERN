@@ -24,6 +24,32 @@ const register = async (req, res) => {
 
 const auth = async (req, res) => {
 
+	const {email, password} = req.body;
+	// check if user exist
+	const user = await User.findOne({ email: email });
+	if (!user) {
+		const error = new Error('User not found');
+		return res.status(404).json({ msg: error.message });
+	};
+
+	// if user is confirmed
+	if (!user.confirmed) {
+		const error = new Error('User not confirmed');
+		return res.status(403).json({ msg: error.message });
+	};
+
+	// check password
+	if (await user.checkPassword(password)) {
+		// make an object to prevent user information leak
+		res.json({
+			_id: user._id,
+			name: user.name,
+			email: user.email
+		})
+	} else {
+		const error = new Error('Wrong user or password');
+		return res.status(403).json({ msg: error.message });
+	};
 };
 
 export {
