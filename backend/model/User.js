@@ -21,7 +21,7 @@ const userSchema = mongoose.Schema({
 	token: {
 		type: String
 	},
-	confirmed: {
+	isConfirmed: {
 		type: Boolean,
 		default: false
 	}
@@ -40,7 +40,7 @@ userSchema.pre('save', async function(next) {
 
 userSchema.methods.checkPassword = async function(password) {
 	return await bcrypt.compare(password, this.password);
-}
+};
 
 const User = mongoose.model('User', userSchema);
 export default User;

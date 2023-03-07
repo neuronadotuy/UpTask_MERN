@@ -1,6 +1,5 @@
 import User from '../model/User.js';
 import genId from '../helpers/genid.js';
-import genJson from '../helpers/genJWT.js';
 import genJsonWebToken from '../helpers/genJWT.js';
 
 const register = async (req, res) => {
@@ -35,7 +34,7 @@ const auth = async (req, res) => {
 	};
 
 	// if user is confirmed
-	if (!user.confirmed) {
+	if (!user.isConfirmed) {
 		const error = new Error('User not confirmed');
 		return res.status(403).json({ msg: error.message });
 	};
@@ -47,7 +46,7 @@ const auth = async (req, res) => {
 			_id: user._id,
 			name: user.name,
 			email: user.email,
-			token: genJsonWebToken(user._id),
+			jsonwebtoken: genJsonWebToken(user._id),
 		})
 	} else {
 		const error = new Error('Wrong user or password');
@@ -57,10 +56,46 @@ const auth = async (req, res) => {
 
 const confirm = async (req, res) => {
 
-}
+	const { token } = req.params;
+	//  check if user exist
+	const user = await User.findOne({ token: token });
+	if (!user) {
+		const error = new Error('Invalid token');
+		return res.status(403).json({ msg: error.message });
+	};
+
+	try {
+		user.isConfirmed = true;
+		user.token = ''
+		await user.save();
+		res.json({ msg: 'Confirmed!' });
+		console.log(user);
+	} catch (error) {
+		console.log(error);
+	}
+};
+
+const forgotPassword = async (req, res) => {
+	const { email } = req.body;
+	// check if user exist
+	const user = await User.findOne({ email: email });
+	if (!user) {
+		const error = new Error('User not found');
+		return res.status(404).json({ msg: error.message });
+	};
+
+	try {
+		user.token = genId();
+		await user.save();
+		res.json({ msg: "Verify you email" });
+	} catch (error) {
+		console.log(error);
+	}
+};
 
 export {
 	register,
 	auth,
-	confirm
+	confirm,
+	forgotPassword
 };
