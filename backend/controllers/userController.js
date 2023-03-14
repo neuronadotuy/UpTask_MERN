@@ -93,9 +93,54 @@ const forgotPassword = async (req, res) => {
 	}
 };
 
+const checkToken = async (req, res) => {
+	const { token } = req.params;
+
+	const isValid = await User.findOne({ token: token });
+
+	if (isValid) {
+		console.log('valid');
+		res.json({ msg: 'Token is valid, user exists' });
+	} else {
+		const error = new Error('Invalid Token');
+		res.status(404).json({ msg: error.message });
+		console.log('invalid');
+	}
+};
+
+const newPassword = async (req, res) => {
+	const { token } = req.params;
+	const { password } = req.body;
+
+	const user = await User.findOne({ token: token });
+
+	if (user) {
+		user.password = password;
+		user.token = '';
+		
+		try {
+			await user.save();
+			res.json({ msg: 'Password has been saved successfully'});	
+		} catch (error) {
+			console.log(error);
+		};
+	} else {
+		const error = new Error('Invalid Token');
+		res.status(404).json({ msg: error.message });
+		console.log('invalid');
+	}
+};
+
+const profile = async (req, res) => {
+	console.log('profile...');
+};
+
 export {
 	register,
 	auth,
 	confirm,
-	forgotPassword
+	forgotPassword,
+	checkToken,
+	newPassword,
+	profile
 };
